@@ -1,3 +1,4 @@
+"use strict";
 const net = require('net');
 const spawn = require('child_process').spawn;
 
@@ -74,7 +75,7 @@ net.createServer(function(sock) {
 				if(RX){
 					RX_freq = data.match(/\d+/)[0]
 					// TO make request to OC GS SW to retune RX channel
-					command = 	"blue"+"\n"+
+					command = 	"gs:terrassa"+"\n"+
 								"Command=Write"+"\n"+
 								"Key=RX frequency"+"\n"+
 								"Value="+RX_freq+""+"\n"+
@@ -84,7 +85,7 @@ net.createServer(function(sock) {
 				}
 				else if(TX) {
 					TX_freq = data.match(/\d+/)[0]
-					command = 	"blue"+"\n"+
+					command = 	"gs:terrassa"+"\n"+
 								"Command=Write"+"\n"+
 								"Key=TX frequency"+"\n"+
 								"Value="+TX_freq+""+"\n"+
