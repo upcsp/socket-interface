@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+// for file  to work globally: sudo ln -s /home/tgs/repos/socket-interface/rotor-calibration /usr/bin/rotor-calibration
 var net = require('net');
 
 var HOST = '127.0.0.1';
