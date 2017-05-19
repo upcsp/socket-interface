@@ -36,28 +36,32 @@ process.on('SIGINT', function() {
 // The sock object the callback function receives UNIQUE for each connection
 net.createServer(function(sock) {
 
+    //////////////// DATA FROM CONTROLLER ///////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////
     client.on('data', function(data) {
 
-    console.log('DATA from controller: ' + data);
-    data = data.toString('utf8');
-    
-    // If blocks in order to handle different obtained answers fromw hamlib
-    if (data.match(/^([\w\-]+)/)[0] == "get_pos" || !/^[a-zA-Z]/.test(data)) {
-    	readAZ = data.match(/[0-9]*\.?[0-9]+/g)[0];
-    	readAZ = parseInt(readAZ);
-    	// Translation from real value to desired value using JSON file in order to cheat GPredict
-    	readAZ = calibration.desired[calibration.real.indexOf(AZ)];
-    	readAZEL = readAZ +"\n" + data.match(/[0-9]*\.?[0-9]+/g)[1];
-    	console.log("readAZEL", readAZEL);
-    }
-    else  {
-    	console.error("Unhandled Command from Controller")
-    }	
+        console.log('DATA from controller: ' + data);
+        data = data.toString('utf8');
+        
+        // If blocks in order to handle different obtained answers from hamlib
+        if (data.match(/^([\w\-]+)/)[0] == "get_pos" || !/^[a-zA-Z]/.test(data)) {
+        	readAZ = data.match(/[0-9]*\.?[0-9]+/g)[0];
+        	readAZ = parseInt(readAZ);
+        	// Translation from real value to desired value using JSON file in order to cheat GPredict
+        	readAZ = calibration.desired[calibration.real.indexOf(AZ)];
+        	readAZEL = readAZ +"\n" + data.match(/[0-9]*\.?[0-9]+/g)[1];
+        	console.log("readAZEL", readAZEL);
+        }
+        else  {
+        	console.error("Unhandled Command from Controller")
+        }	
 
 	});
     // We have a connection - a socket object is assigned to the connection automatically
     console.log('CONNECTION TO SERVER: ' + sock.remoteAddress +':'+ sock.remotePort);
     
+    //////////////////////// DATA FROM GPREDICT ///////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////
     // Add a 'data' event handler to this instance of socket
     sock.on('data', function(data) {
         
@@ -68,7 +72,7 @@ net.createServer(function(sock) {
         if ( /^[a-z]/.test(data) ) {
             if (/p/.test(data)) {
             	console.log("Send to controller: p")
-            	client.write("p")
+            	client.write("p\n")
             	sock.write(readAZEL);
             }
         }
@@ -82,7 +86,7 @@ net.createServer(function(sock) {
                 
                 EL = data.match(/[0-9]*\.?[0-9]+/g)[1];
 
-	            var command = "P " + AZ +" " + EL;
+	            var command = "P   " + AZ +"  " + EL+'\n';
 
 	            console.log('Send to controller: '+command)
 	            client.write(command)
@@ -94,9 +98,13 @@ net.createServer(function(sock) {
         
     });
     
+
+    ///////////////////////////////////////////////////////////////////////
     // Add a 'close' event handler to this instance of socket
     sock.on('close', function(data) {
         console.log('CLOSED: ' + sock.remoteAddress +' '+ sock.remotePort);
-    });    
+    });
+
+
 }).listen(PORT_gp, HOST);
 console.log('Server listening on ' + HOST +':'+ PORT_gp);
