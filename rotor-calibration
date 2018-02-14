@@ -42,29 +42,29 @@ net.createServer(function(sock) {
 
         console.log('DATA from controller: ' + data);
         data = data.toString('utf8');
-        
+
         // If blocks in order to handle different obtained answers from hamlib
         if (data.match(/^([\w\-]+)/)[0] == "get_pos" || !/^[a-zA-Z]/.test(data)) {
-        	readAZ = data.match(/[0-9]*\.?[0-9]+/g)[0];
+        	readAZ = data.match(/[0-9]*[\,\.]?[0-9]+/g)[0];
         	readAZ = parseInt(readAZ);
         	// Translation from real value to desired value using JSON file in order to cheat GPredict
         	readAZ = calibration.desired[calibration.real.indexOf(AZ)];
-        	readAZEL = readAZ +"\n" + data.match(/[0-9]*\.?[0-9]+/g)[1];
+        	readAZEL = readAZ +"\n" + data.match(/[0-9]*[\,\.]?[0-9]+/g)[1];
         	console.log("readAZEL", readAZEL);
         }
         else  {
         	console.error("Unhandled Command from Controller")
-        }	
+        }
 
 	});
     // We have a connection - a socket object is assigned to the connection automatically
     console.log('CONNECTION TO SERVER: ' + sock.remoteAddress +':'+ sock.remotePort);
-    
+
     //////////////////////// DATA FROM GPREDICT ///////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////
     // Add a 'data' event handler to this instance of socket
     sock.on('data', function(data) {
-        
+
         console.log('DATA from Gpredict' + ': ' + data);
         data = data.toString('utf8');
 
@@ -79,25 +79,25 @@ net.createServer(function(sock) {
         /*** Uppercase commands or setters ***/
         else if ( /^[A-Z]/.test(data) ) {
             if(/^P/.test(data)) {
-                AZ = data.match(/[0-9]*\.?[0-9]+/g)[0];
+                AZ = data.match(/[0-9]*[\,\.]?[0-9]+/g)[0];
 	            AZ = parseInt(AZ);
 	            // Translation from desired to real value in order to cheat the rotator
 	            AZ  = calibration.real[calibration.desired.indexOf(AZ)];
-                
-                EL = data.match(/[0-9]*\.?[0-9]+/g)[1];
+
+                EL = data.match(/[0-9]*[\,\.]?[0-9]+/g)[1];
 
 	            var command = "P   " + AZ +"  " + EL+'\n';
 
 	            console.log('Send to controller: '+command)
 	            client.write(command)
 	            // Return of Successfully Sent Command
-	            sock.write('RPRT 0');	            
+	            sock.write('RPRT 0');
             }
             else {console.error("Unhandled Command")}
         }
-        
+
     });
-    
+
 
     ///////////////////////////////////////////////////////////////////////
     // Add a 'close' event handler to this instance of socket
